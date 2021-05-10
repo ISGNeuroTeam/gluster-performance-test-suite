@@ -1,9 +1,9 @@
 ---
-- name: Setup passwordless ssh from control machine to cluster
-  hosts: control
-  remote_user: root
-  roles:
-    - setup-control-machine-connectivity-to-cluster
+#- name: Setup passwordless ssh from control machine to cluster
+#  hosts: control
+#  remote_user: root
+#  roles:
+#    - setup-control-machine-connectivity-to-cluster
 
 - name: Unmount glusterfs from clients
   hosts: cluster_clients
@@ -57,14 +57,14 @@
   roles:
     - { role: setup-upstream-repo, when: build == "upstream" }
 
-- name: Subscribe to RHSM
-  hosts: cluster_machines
-  remote_user: root
-  gather_facts: no
-  vars_files:
-    - "{{ rhsm_vars }}"
-  roles:
-    - { role: gluster.repos,  when: use_rhsm_repository|int == 1 }
+#- name: Subscribe to RHSM
+#  hosts: cluster_machines
+#  remote_user: root
+#  gather_facts: no
+#  vars_files:
+#    - "{{ rhsm_vars }}"
+#  roles:
+#    - { role: gluster.repos,  when: use_rhsm_repository|int == 1 }
 
 - name: Setup custom build repository
   hosts: cluster_machines
@@ -138,44 +138,44 @@
         fstype: glusterfs
         state: mounted
 
-- name: Install performance benchmarking tools
-  hosts: cluster_clients
-  remote_user: root
-  roles:
-    - { role: install-perf-benchmarking-tools, when: benchmarking_tools|int == 1 }
+#- name: Install performance benchmarking tools
+#  hosts: cluster_clients
+#  remote_user: root
+#  roles:
+#    - { role: install-perf-benchmarking-tools, when: benchmarking_tools|int == 1 }
 
-- name: Execute perf test and get results
-  hosts: master_client
-  remote_user: root
-  environment:
-    CLIENT: "{{groups['cluster_clients']}}"
-  roles:
-    - execute-perf-and-get-results
+#- name: Execute perf test and get results
+#  hosts: master_client
+#  remote_user: root
+#  environment:
+#    CLIENT: "{{groups['cluster_clients']}}"
+#  roles:
+#    - execute-perf-and-get-results
 
-- name: Fetch pcplogs from all the machines
-  hosts: cluster_machines
-  remote_user: root
-  tasks:
-    - name: Find pcplogs
-      find :
-        paths: /var/log/pcp/pmlogger/
-        recurse: yes
-      register: files_to_copy
+#- name: Fetch pcplogs from all the machines
+#  hosts: cluster_machines
+#  remote_user: root
+#  tasks:
+#    - name: Find pcplogs
+#      find :
+#        paths: /var/log/pcp/pmlogger/
+#        recurse: yes
+#      register: files_to_copy
+#
+#    - name: Get pcplogs
+#      fetch:
+#        src: "{{ item.path }}"
+#        dest: "{{ download_results_at_location }}/results/pcplogs"
+#      with_items: "{{ files_to_copy.files }}"
+#      ignore_errors: yes
 
-    - name: Get pcplogs
-      fetch:
-        src: "{{ item.path }}"
-        dest: "{{ download_results_at_location }}/results/pcplogs"
-      with_items: "{{ files_to_copy.files }}"
-      ignore_errors: yes
-
-- name: delete the ssh key if specifically asked
-  hosts: control_machine
-  tasks:
-    - file:
-        path: "{{ item }}"
-        state: absent
-      with_items:
-        - ~/.ssh/id_rsa
-        - ~/.ssh/id_rsa.pub
-      when: delete_key is defined
+#- name: delete the ssh key if specifically asked
+#  hosts: control_machine
+#  tasks:
+#    - file:
+#        path: "{{ item }}"
+#        state: absent
+#      with_items:
+#        - ~/.ssh/id_rsa
+#        - ~/.ssh/id_rsa.pub
+#      when: delete_key is defined

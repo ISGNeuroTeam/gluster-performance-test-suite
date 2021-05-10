@@ -46,10 +46,10 @@
     - ansible_distribution == "RedHat"
     - ansible_distribution_major_version == "8"
 
-- name: distribute the ssh key to the remote hosts
-  shell: "/usr/bin/sshpass -p \"{{ remote_machine_password }}\" ssh-copy-id -f -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/{{ ssh_key_filename }}.pub  \"{{ remote_machine_username }}@{{ item }}\""
-  register: ssh_copy_id_execution
-  with_items:
-    - "{{ groups['cluster_machines']}}"
-  failed_when: ssh_copy_id_execution.rc != 0
-  when: inventory_hostname == groups['master_client'].0
+#- name: distribute the ssh key to the remote hosts
+#  shell: "/usr/bin/sshpass -p \"{{ remote_machine_password }}\" ssh-copy-id -f -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/{{ ssh_key_filename }}.pub  \"{{ remote_machine_username }}@{{ item }}\""
+#  register: ssh_copy_id_execution
+#  with_items:
+#    - "{{ groups['cluster_machines']}}"
+#  failed_when: ssh_copy_id_execution.rc != 0
+#  when: inventory_hostname == groups['master_client'].0

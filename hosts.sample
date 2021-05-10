@@ -2,7 +2,7 @@
 gluster_volumes=testvol
 gluster_cluster_replica_count=3
 #gluster_cluster_disperse_count=3
-node0=server1.example.com
+node0=gluster1
 build="upstream"
 #build="custom"
 #custom_build_url="https://download.gluster.org/pub/gluster/glusterfs/8/8.1/Fedora/fedora-32/x86_64/"
@@ -11,29 +11,29 @@ build="upstream"
 benchmarking_tools=0
 backend_variables=~/config-for-cluster1/cluster1-backend-vars.yml
 cleanup_vars=~/config-for-cluster1/cluster1-cleanup-vars.yml
-rhsm_vars=~/config-for-cluster1/rhsm-vars.yml
+#rhsm_vars=~/config-for-cluster1/rhsm-vars.yml
 use_rhsm_repository=0
 tool="smallfile"
 download_results_at_location=~/config-for-cluster1/
 
 [control]
-control_machine ansible_host=127.0.0.1 ansible_connection=local
+control_machine ansible_host=fsmgmt ansible_connection=local
 
 [master_server]
-server1.example.com
+gluster1
 
 [master_client]
-client1.example.com
+gluster1
 
 [cluster_servers]
-server1.example.com
-server2.example.com
-server3.example.com
+gluster1
+gluster2
+gluster3
 
 [cluster_clients]
-client1.example.com should_mount_from=server1.example.com
-client2.example.com should_mount_from=server2.example.com
-client3.example.com should_mount_from=server3.example.com
+gluster1 should_mount_from=gluster1
+gluster2 should_mount_from=gluster2
+gluster2 should_mount_from=gluster2
 
 [cluster_machines:children]
 cluster_servers

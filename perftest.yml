@@ -5,6 +5,7 @@
 #  roles:
 #    - setup-control-machine-connectivity-to-cluster
 
+
 - name: Unmount glusterfs from clients
   hosts: cluster_clients
   remote_user: root

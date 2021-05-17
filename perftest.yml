@@ -6,57 +6,57 @@
 #    - setup-control-machine-connectivity-to-cluster
 
 
-- name: Unmount glusterfs from clients
-  hosts: cluster_clients
-  remote_user: root
-  tasks:
-    - mount:
-        path: /gluster-mount
-        state: unmounted
+#- name: Unmount glusterfs from clients
+#  hosts: cluster_clients
+#  remote_user: root
+#  tasks:
+#    - mount:
+#        path: /gluster-mount
+#        state: unmounted
 
-- name: Check if gluster is installed
-  hosts: cluster_servers
-  remote_user: root
-  tasks:
-    - shell: command -v gluster >/dev/null 2>&1
-      register: is_gluster_present
-      ignore_errors: yes
-    - debug: msg="{{ is_gluster_present.rc }}"
+#- name: Check if gluster is installed
+#  hosts: cluster_servers
+#  remote_user: root
+#  tasks:
+#    - shell: command -v gluster >/dev/null 2>&1
+#      register: is_gluster_present
+#      ignore_errors: yes
+#    - debug: msg="{{ is_gluster_present.rc }}"
 
-- name: Cleanup delete gluster volume and lv
-  remote_user: root
-  hosts: cluster_servers
-  vars_files:
-    - "{{ cleanup_vars }}"
-  pre_tasks:
-    - name: Delete Gluster volume(s)
-      gluster_volume:
-         state: absent
-         name: "{{ item }}"
-      ignore_errors: yes
-      with_items: "{{ gluster_volumes }}"
-      run_once: true
-      when: is_gluster_present.rc|int == 0
-  roles:
-    - { role: gluster.infra, when: is_gluster_present.rc|int == 0 }
+#- name: Cleanup delete gluster volume and lv
+#  remote_user: root
+#  hosts: cluster_servers
+#  vars_files:
+#    - "{{ cleanup_vars }}"
+#  pre_tasks:
+#    - name: Delete Gluster volume(s)
+#      gluster_volume:
+#         state: absent
+#         name: "{{ item }}"
+#      ignore_errors: yes
+#      with_items: "{{ gluster_volumes }}"
+#      run_once: true
+#      when: is_gluster_present.rc|int == 0
+#  roles:
+#    - { role: gluster.infra, when: is_gluster_present.rc|int == 0 }
 
-- name: Common setup on gluster machines
-  hosts: cluster_machines
-  remote_user: root
-  roles:
-    - common-setup
+#- name: Common setup on gluster machines
+#  hosts: cluster_machines
+#  remote_user: root
+#  roles:
+#    - common-setup
 
-- name: Remove gluster and its repositories
-  hosts: cluster_machines
-  remote_user: root
-  roles:
-    - remove-gluster-and-its-repositories
+#- name: Remove gluster and its repositories
+#  hosts: cluster_machines
+#  remote_user: root
+#  roles:
+#    - remove-gluster-and-its-repositories
 
-- name: Setup upstream repository
-  hosts: cluster_machines
-  remote_user: root
-  roles:
-    - { role: setup-upstream-repo, when: build == "upstream" }
+#- name: Setup upstream repository
+#  hosts: cluster_machines
+#  remote_user: root
+#  roles:
+#    - { role: setup-upstream-repo, when: build == "upstream" }
 
 #- name: Subscribe to RHSM
 #  hosts: cluster_machines
@@ -67,108 +67,108 @@
 #  roles:
 #    - { role: gluster.repos,  when: use_rhsm_repository|int == 1 }
 
-- name: Setup custom build repository
-  hosts: cluster_machines
-  remote_user: root
-  roles:
-    - { role: setup-custom-build-repo, when: build == "custom" }
+#- name: Setup custom build repository
+#  hosts: cluster_machines
+#  remote_user: root
+#  roles:
+#    - { role: setup-custom-build-repo, when: build == "custom" }
 
-- name: Install and start gluster
-  hosts: cluster_servers
-  remote_user: root
-  roles:
-    - install-and-start-gluster
+#- name: Install and start gluster
+#  hosts: cluster_servers
+#  remote_user: root
+#  roles:
+#    - install-and-start-gluster
 
-- name: Client specific setup on gluster machines
-  hosts: cluster_clients
-  remote_user: root
-  roles:
-    - gluster-client-setup
-
-- name: Setting up backend and creating a volume
-  remote_user: root
-  hosts: cluster_servers
-  vars_files:
-    - "{{ backend_variables }}"
-  vars:
-     # Firewall setup
-     gluster_infra_fw_ports:
-       - 2049/tcp
-       - 54321/tcp
-       - 5900/tcp
-       - 5900-6923/tcp
-       - 5666/tcp
-       - 16514/tcp
-     gluster_infra_fw_services:
-       - glusterfs
-       - samba
-
-     gluster_cluster_hosts: "{{ groups['cluster_servers'] }}"
-     gluster_cluster_status: absent
-     gluster_cluster_transport: 'tcp'
-     gluster_cluster_force: 'yes'
-     gluster_cluster_options:
-       diagnostics.count-fop-hits: 'on'
-       diagnostics.latency-measurement: 'on'
-       network.inode-lru-limit: '200000'
-       performance.md-cache-timeout: '600'
-       performance.cache-invalidation: 'on'
-       performance.stat-prefetch: 'on'
-       features.cache-invalidation-timeout: '600'
-       features.cache-invalidation: 'on'
-       nfs.disable: 'off'
-
-  pre_tasks:
-    - name: setting appropriate gluster options for smallfile
-      set_fact:
-        gluster_cluster_options: "{{ gluster_cluster_options | combine({'server.event-threads': '4', 'client.event-threads': '4', 'cluster.lookup-optimize': 'on'})}}"
-      when: tool == "smallfile"
-
-  roles:
-     - gluster.infra
-     - gluster.cluster
-
-- name: Mount gluster volume on all the clients
-  hosts: cluster_clients
-  remote_user: root
-  gather_facts: true
-  tasks:
-    - mount:
-        path: /gluster-mount
-        src: "{{ should_mount_from }}:/testvol"
-        fstype: glusterfs
-        state: mounted
-
-#- name: Install performance benchmarking tools
+#- name: Client specific setup on gluster machines
 #  hosts: cluster_clients
 #  remote_user: root
 #  roles:
-#    - { role: install-perf-benchmarking-tools, when: benchmarking_tools|int == 1 }
+#    - gluster-client-setup
 
-#- name: Execute perf test and get results
-#  hosts: master_client
+#- name: Setting up backend and creating a volume
 #  remote_user: root
-#  environment:
-#    CLIENT: "{{groups['cluster_clients']}}"
+#  hosts: cluster_servers
+#  vars_files:
+#    - "{{ backend_variables }}"
+#  vars:
+#     # Firewall setup
+#     gluster_infra_fw_ports:
+#       - 2049/tcp
+#       - 54321/tcp
+#       - 5900/tcp
+#       - 5900-6923/tcp
+#       - 5666/tcp
+#       - 16514/tcp
+#     gluster_infra_fw_services:
+#       - glusterfs
+#       - samba
+
+ #    gluster_cluster_hosts: "{{ groups['cluster_servers'] }}"
+ #    gluster_cluster_status: absent
+ #    gluster_cluster_transport: 'tcp'
+ #    gluster_cluster_force: 'yes'
+ #    gluster_cluster_options:
+ #      diagnostics.count-fop-hits: 'on'
+ #      diagnostics.latency-measurement: 'on'
+ #      network.inode-lru-limit: '200000'
+ #      performance.md-cache-timeout: '600'
+ #      performance.cache-invalidation: 'on'
+ #      performance.stat-prefetch: 'on'
+ #      features.cache-invalidation-timeout: '600'
+ #      features.cache-invalidation: 'on'
+ #      nfs.disable: 'off'
+
+#  pre_tasks:
+#    - name: setting appropriate gluster options for smallfile
+#      set_fact:
+#        gluster_cluster_options: "{{ gluster_cluster_options | combine({'server.event-threads': '4', 'client.event-threads': '4', 'cluster.lookup-optimize': 'on'})}}"
+#      when: tool == "smallfile"
+
 #  roles:
-#    - execute-perf-and-get-results
+#     - gluster.infra
+#     - gluster.cluster
 
-#- name: Fetch pcplogs from all the machines
-#  hosts: cluster_machines
+#- name: Mount gluster volume on all the clients
+#  hosts: cluster_clients
 #  remote_user: root
+#  gather_facts: true
 #  tasks:
-#    - name: Find pcplogs
-#      find :
-#        paths: /var/log/pcp/pmlogger/
-#        recurse: yes
-#      register: files_to_copy
-#
-#    - name: Get pcplogs
-#      fetch:
-#        src: "{{ item.path }}"
-#        dest: "{{ download_results_at_location }}/results/pcplogs"
-#      with_items: "{{ files_to_copy.files }}"
-#      ignore_errors: yes
+#   - mount:
+#       path: /gluster-mount
+#       src: "{{ should_mount_from }}:/testvol"
+#       fstype: glusterfs
+#       state: mounted
+
+- name: Install performance benchmarking tools
+  hosts: cluster_clients
+  remote_user: root
+  roles:
+    - { role: install-perf-benchmarking-tools, when: benchmarking_tools|int == 1 }
+
+- name: Execute perf test and get results
+  hosts: master_client
+  remote_user: root
+  environment:
+    CLIENT: "{{groups['cluster_clients']}}"
+  roles:
+    - execute-perf-and-get-results
+
+- name: Fetch pcplogs from all the machines
+  hosts: cluster_machines
+  remote_user: root
+  tasks:
+    - name: Find pcplogs
+      find :
+        paths: /var/log/pcp/pmlogger/
+        recurse: yes
+      register: files_to_copy
+
+    - name: Get pcplogs
+      fetch:
+        src: "{{ item.path }}"
+        dest: "{{ download_results_at_location }}/results/pcplogs"
+      with_items: "{{ files_to_copy.files }}"
+      ignore_errors: yes
 
 #- name: delete the ssh key if specifically asked
 #  hosts: control_machine
